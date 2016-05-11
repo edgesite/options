@@ -5,8 +5,27 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
+	"strings"
 )
+
+var CamelCaseRegexp, _ = regexp.Compile("[A-Z][a-z]+")
+
+func SplitCamelCase(s string) (ret []string) {
+	start := 0
+	result := CamelCaseRegexp.FindAllStringIndex(s, -1)
+	for _, loc := range result {
+		if start != loc[0] {
+			ret = append(ret, s[start:loc[0]])
+		}
+		ret = append(ret, s[loc[0]:loc[1]])
+		start = loc[1]
+	}
+	return ret
+}
+
+var nilStruct struct{}
 
 func Parse(v interface{}, parseEnv, parseFlag bool) {
 	rv := reflect.ValueOf(v)
@@ -22,13 +41,28 @@ func Parse(v interface{}, parseEnv, parseFlag bool) {
 		f := typ.Field(i)
 		envKey := f.Tag.Get("env")
 		flagKey := f.Tag.Get("flag")
+		optionSet := make(map[string]struct{})
+		for _, option := range strings.Split(f.Tag.Get("options"), " ") {
+			optionSet[option] = nilStruct
+		}
+		if f.Tag.Get("required") != "" {
+			optionSet["required"] = nilStruct
+		}
+		if _, auto := optionSet["auto"]; auto {
+			if envKey == "" {
+				envKey = strings.ToUpper(strings.Join(SplitCamelCase(f.Name), "_"))
+			}
+			if flagKey == "" {
+				flagKey = strings.ToLower(strings.Join(SplitCamelCase(f.Name), "-"))
+			}
+		}
 		if parseEnv && envKey != "" && os.Getenv(envKey) != "" {
 			envMap[i] = os.Getenv(envKey)
 		}
 		if parseFlag && flagKey != "" {
 			flagMap[i] = flag.String(flagKey, "", f.Tag.Get("usage"))
 		}
-		if f.Tag.Get("required") != "" {
+		if _, required := optionSet["required"]; required {
 			requiredMap[i] = f.Name
 		}
 	}
@@ -58,7 +92,8 @@ func set(v reflect.Value, s string) {
 	case reflect.String:
 		v.SetString(s)
 	case reflect.Bool:
-		if s == "yes" || s == "1" {
+		s = strings.ToLower(s)
+		if s == "true" || s == "yes" || s == "1" {
 			v.SetBool(true)
 		} else {
 			v.SetBool(false)
