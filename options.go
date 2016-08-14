@@ -15,12 +15,19 @@ var CamelCaseRegexp, _ = regexp.Compile("[A-Z][a-z]+")
 func SplitCamelCase(s string) (ret []string) {
 	start := 0
 	result := CamelCaseRegexp.FindAllStringIndex(s, -1)
+	if result == nil {
+		ret = append(ret, s)
+		return
+	}
 	for _, loc := range result {
 		if start != loc[0] {
 			ret = append(ret, s[start:loc[0]])
 		}
 		ret = append(ret, s[loc[0]:loc[1]])
 		start = loc[1]
+	}
+	if start < len(s) {
+		ret = append(ret, s[start:])
 	}
 	return ret
 }

@@ -9,9 +9,10 @@ import (
 )
 
 func TestSplitCamelCase(t *testing.T) {
+	assert.EqualValues(t, SplitCamelCase("HA"), []string{"HA"})
 	assert.EqualValues(t, SplitCamelCase("HaProxy"), []string{"Ha", "Proxy"})
 	assert.EqualValues(t, SplitCamelCase("HAProxy"), []string{"HA", "Proxy"})
-	// assert.EqualValues(t, SplitCamelCase("HAProxy!"), []string{"HA", "Proxy!"})
+	assert.EqualValues(t, SplitCamelCase("HAProxy!"), []string{"HA", "Proxy", "!"})
 	assert.EqualValues(t, SplitCamelCase("hHaProxy"), []string{"h", "Ha", "Proxy"})
 }
 
