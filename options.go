@@ -95,7 +95,15 @@ func Parse(v interface{}, parseEnv, parseFlag bool) {
 }
 
 func set(v reflect.Value, s string) {
-	switch v.Kind() {
+	kind := v.Kind()
+	if v.Kind() == reflect.Ptr {
+		kind = v.Type().Elem().Kind()
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		v = v.Elem()
+	}
+	switch kind {
 	case reflect.String:
 		v.SetString(s)
 	case reflect.Bool:

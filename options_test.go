@@ -29,6 +29,7 @@ func TestSet(t *testing.T) {
 		Int32      int32
 		Int64      int64
 		String     string
+		StringPtr  *string
 		Bool_True  bool
 		Bool_Yes   bool
 		Bool_1     bool
@@ -46,10 +47,11 @@ func TestSet(t *testing.T) {
 	set(getField(8), "1")
 	set(getField(9), "1")
 	set(getField(10), "1")
-	set(getField(11), "true")
-	set(getField(12), "yes")
-	set(getField(13), "1")
-	set(getField(14), "false")
+	set(getField(11), "1")
+	set(getField(12), "true")
+	set(getField(13), "yes")
+	set(getField(14), "1")
+	set(getField(15), "false")
 	assert.Equal(t, v.Uint, uint(1))
 	assert.Equal(t, v.Uint8, uint8(1))
 	assert.Equal(t, v.Uint16, uint16(1))
@@ -61,6 +63,7 @@ func TestSet(t *testing.T) {
 	assert.Equal(t, v.Int32, int32(1))
 	assert.Equal(t, v.Int64, int64(1))
 	assert.Equal(t, v.String, "1")
+	assert.Equal(t, *v.StringPtr, "1")
 	assert.Equal(t, v.Bool_True, true)
 	assert.Equal(t, v.Bool_Yes, true)
 	assert.Equal(t, v.Bool_1, true)
